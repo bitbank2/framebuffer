@@ -49,10 +49,10 @@ int x, y;
 void DrawFilledCircle(uint32_t *pFB, int iWidth, int iRadius, int iXCenter, int iYCenter, uint32_t ulColor)
 {
 float angle;
-int x, y, xp, x1, y1;
+int x, y, xp;//, x1, y1;
 uint32_t *ptemp;
 
-   for (angle=-3.14/2; angle<=3.14/2; angle += 0.05)
+   for (angle=-3.14/2; angle<=3.14/2; angle += 0.02)
    {
 	x = (int)(cos(angle) * iRadius);
 	y = (int)(sin(angle) * iRadius);
@@ -95,11 +95,14 @@ int main(int argc, char* argv[])
     printf("Error reading fixed information.\n");
   }
 
+printf("panning xstep=%d, ystep=%d, ywrap=%d (non-zero means it scan scroll)\n", finfo.xpanstep, finfo.ypanstep, finfo.ywrapstep);
+printf("smem_len=%08x, line_length=%08x, mem can hold %d lines\n", finfo.smem_len, finfo.line_length, finfo.smem_len / finfo.line_length);
+
   // Get variable screen information
   if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
     printf("Error reading variable information.\n");
   }
-  printf("%dx%d, %d bpp\n", vinfo.xres, vinfo.yres, 
+  printf("visible res %dx%d, virtual res %dx%d, %d bpp\n", vinfo.xres, vinfo.yres, vinfo.xres_virtual, vinfo.yres_virtual,
          vinfo.bits_per_pixel );
 
   // map framebuffer to user memory 
@@ -111,7 +114,7 @@ int main(int argc, char* argv[])
                     MAP_SHARED, 
                     fbfd, 0);
 
-  if ((int)fbp == -1) {
+  if ((signed long)fbp == -1) {
     printf("Failed to mmap.\n");
   }
   else {
